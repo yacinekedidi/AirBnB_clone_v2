@@ -47,7 +47,7 @@ class Place(BaseModel, Base):
             return rev_list
 
         @property
-        def amenitites(self):
+        def amenities(self):
             """
             return list of amenities objs
             """
