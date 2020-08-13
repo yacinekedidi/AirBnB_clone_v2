@@ -11,6 +11,8 @@ from models.city import City
 from models.amenity import Amenity
 from models.review import Review
 import shlex
+from os import getenv
+from models import storage
 
 
 class HBNBCommand(cmd.Cmd):
@@ -114,16 +116,16 @@ class HBNBCommand(cmd.Cmd):
         """ Overrides the emptyline method of CMD """
         pass
 
-    def do_create(self, args):
+    def do_create(self, line):
         """ Create an object of any class"""
         try:
-            if not args:
+            if not line:
                 raise SyntaxError()
-            x = args.split(" ")
-            d = {}
-            c = x.pop(0)
-            for i in x:
-                k, v = i.split("=")
+            l = line.split(" ")
+
+            kwargs = {}
+            for i in range(1, len(l)):
+                k, v = tuple(l[i].split("="))
                 if v[0] == '"':
                     v = v.strip('"').replace("_", " ")
                 else:
@@ -131,14 +133,16 @@ class HBNBCommand(cmd.Cmd):
                         v = eval(v)
                     except (SyntaxError, NameError):
                         continue
-                d[k] = v
-            if d == {}:
-                o = eval(c)()
+                kwargs[k] = v
+
+            if kwargs == {}:
+                obj = eval(l[0])()
             else:
-                o = eval(c)(**d)
-            storage.new(o)
-            print(o.id)
-            o.save()
+                obj = eval(l[0])(**kwargs)
+                storage.new(obj)
+            print(obj.id)
+            obj.save()
+
         except SyntaxError:
             print("** class name missing **")
         except NameError:
@@ -218,18 +222,22 @@ class HBNBCommand(cmd.Cmd):
     def do_all(self, args):
         """ Shows all objects, or all objects of a class"""
         print_list = []
-
-        if args:
-            args = args.split(' ')[0]  # remove possible trailing args
-            if args not in HBNBCommand.classes:
-                print("** class doesn't exist **")
-                return
-            for k, v in storage._FileStorage__objects.items():
-                if k.split('.')[0] == args:
-                    print_list.append(str(v))
-        else:
-            for k, v in storage._FileStorage__objects.items():
+        if getenv("HBNB_TYPE_STORAGE") == 'db':
+            args = args.split(' ')[0]
+            for k, v in storage.all(eval(args)).items():
                 print_list.append(str(v))
+        else:
+            if args:
+                args = args.split(' ')[0]  # remove possible trailing args
+                if args not in HBNBCommand.classes:
+                    print("** class doesn't exist **")
+                    return
+                for k, v in storage._FileStorage__objects.items():
+                    if k.split('.')[0] == args:
+                        print_list.append(str(v))
+            else:
+                for k, v in storage._FileStorage__objects.items():
+                    print_list.append(str(v))
 
         print(print_list)
 
