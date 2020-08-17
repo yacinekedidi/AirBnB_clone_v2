@@ -1,4 +1,4 @@
-# Add HTTP header Puppet
+#  Puppet
 
 exec { 'Nginx setup':
 command => 'apt-get -y update;
