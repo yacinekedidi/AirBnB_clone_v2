@@ -6,7 +6,7 @@ apt-get -y install nginx
 
 mkdir -p /data/web_static/shared/
 mkdir -p /data/web_static/releases/test/
-echo "Holberton" /data/web_static/releases/test/index.html
+echo "Holberton" > /data/web_static/releases/test/index.html
 
 ln -fs /data/web_static/releases/test/ /data/web_static/current
 chown -R ubuntu:ubuntu /data/
